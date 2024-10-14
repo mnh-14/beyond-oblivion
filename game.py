@@ -19,7 +19,6 @@ class Game:
     def _set_camera(self):
         self.camera = self.screen.get_rect().copy()
         self.camera.center = self.char.rect.center
-        print("camera:", self.camera.x, self.camera.y, "width", self.camera.width, "height", self.camera.height)
 
     def gameplay(self):
         while True:

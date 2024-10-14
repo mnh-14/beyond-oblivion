@@ -1,13 +1,15 @@
 
+from typing import Any
 import pygame
 
 from settings import Constant
 
 
-class Object:
+class Object(pygame.sprite.Sprite):
     def __init__(self, img_path:str) -> None:
-        self.img = pygame.image.load(img_path)
-        self.rect = self.img.get_rect()
+        super().__init__()
+        self.image = pygame.image.load(img_path)
+        self.rect = self.image.get_rect()
         self.rect.center = (0,0)
         self.velocity = [0,0]
     
@@ -15,13 +17,17 @@ class Object:
         rel_rect = self.rect.copy()
         rel_rect.x = self.rect.x - camera.x
         rel_rect.y = self.rect.y - camera.y
-        screen.blit(self.img, rel_rect)
+        screen.blit(self.image, rel_rect)
     
     def set_position(self, x:int, y:int):
         self.rect.x=x
         self.rect.y=y
     
     def move(self):
+        self.rect.x += self.velocity[0]
+        self.rect.y -= self.velocity[1]
+    
+    def update(self, *args: Any, **kwargs: Any) -> None:
         self.rect.x += self.velocity[0]
         self.rect.y -= self.velocity[1]
     

@@ -70,7 +70,7 @@ class Game:
 
     def gameplay(self):
         while True:
-            self.screen.fill((168, 162, 158))
+            self.screen.fill((130, 130, 170))
             ph, ph_no = self.current_phase.split("-")
             self.phases[ph][ph_no][Game.EVENTS]()
             self.phases[ph][ph_no][Game.LOGIC]()

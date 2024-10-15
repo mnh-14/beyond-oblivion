@@ -1,11 +1,11 @@
 from __future__ import annotations
-from enum import Flag
-import sys
 from typing import Any
 import pygame
 
 # from game import Camera
-from settings import Constant
+from settings import Constant, AssetLoader
+
+asset_loader = AssetLoader()
 
 
 class Object(pygame.sprite.Sprite):
@@ -13,8 +13,9 @@ class Object(pygame.sprite.Sprite):
     BOUNCE_IMPACT = 2
     def __init__(self, img_path:str, gravity=False, passthrough=False) -> None:
         super().__init__()
-        self.image = pygame.image.load(img_path)
+        self.image = pygame.image.load(img_path).convert_alpha()
         self.rect = self.image.get_rect()
+        # self.rect = pygame.Rect(0, 0, Constant.BOX[0], Constant.BOX[1])
         self.pre_rect = self.rect.copy()
         self.rect.center = (0,0)
         self.velocity = [0,0]
@@ -27,14 +28,59 @@ class Object(pygame.sprite.Sprite):
         rel_rect = camera.relative_rect(self.rect)
         screen.blit(self.image, rel_rect)
     
+    def load_animations(self, animation_cat):
+        self.animations, self.delays = asset_loader.load_asset(animation_cat)
+        self.frame_count = 0
+        self.curr_frame = 1
+        self.anim_frame = 0
+        self.anim_state = ""
+
+    def animation_state_switch(self):
+        pass
+    
+    def animate(self):
+        pass
+
+    
     def set_position(self, x:int, y:int):
         self.rect.x=x
         self.rect.y=y
+
+    def set_center_pos(self, x:int, y:int):
+        self.rect.centerx = x
+        self.rect.centery = y
     
     def move(self):
-        self.pre_rect = self.rect.copy()
-        self.rect.x += self.velocity[0]
-        self.rect.y -= self.velocity[1]
+        # self.pre_rect = self.rect.copy()
+        self.rect.x += int(self.velocity[0])
+        self.rect.y -= int(self.velocity[1])
+    
+    def handle_xaxis_collision(self, obj:Object=None, impact_type=RESTRICT_IMPACT):
+        if self.passthrough:
+            return
+        if obj is None:
+            return
+        dx = obj.rect.centerx - self.rect.centerx
+        if impact_type==Object.RESTRICT_IMPACT:
+            self.velocity[0] = 0
+            if dx < 0:
+                self.rect.left = obj.rect.right
+            if dx > 0:
+                self.rect.right = obj.rect.left
+    
+    def handle_yaxis_collision(self, obj:Object=None, impact_type=RESTRICT_IMPACT):
+        if self.passthrough:
+            return
+        if obj is None:
+            return
+        dy = obj.rect.centery - self.rect.centery
+        if impact_type==Object.RESTRICT_IMPACT:
+            self.velocity[1] = 0
+            if dy < 0:
+                self.rect.top = obj.rect.bottom
+            if dy > 0:
+                self.rect.bottom = obj.rect.top
+        
     
     def movement_impact(self, obj:Object=None, impact_type=RESTRICT_IMPACT):
         if self.passthrough:
@@ -42,43 +88,59 @@ class Object(pygame.sprite.Sprite):
         if obj is None:
             return
         rect = obj.rect
-        dx = rect.centerx - self.pre_rect.centerx
-        dy = rect.centery - self.pre_rect.centery
+        dx = rect.centerx - self.rect.centerx
+        dy = rect.centery - self.rect.centery
         if impact_type==Object.RESTRICT_IMPACT:
+            print("======================================================")
+            print("Self rect:", self.rect.topleft, self.rect.bottomright)
+            print("Coll rect", rect.topleft, rect.bottomright)
             if abs(dx) < abs(dy):
+                print("Y collision:")
                 self.velocity[1] = 0
+                if dy < 0:
+                    self.rect.top = rect.bottom
                 if dy > 0:
                     self.rect.bottom = rect.top
-                elif dy < 0:
-                    self.rect.top = rect.bottom
-            elif abs(dx) > abs(dy):
+            if abs(dx) > abs(dy):
+                print("X collision:")
                 self.velocity[0] = 0
+                if dx < 0:
+                    self.rect.left = rect.right
                 if dx > 0:
                     self.rect.right = rect.left
-                elif dx < 0:
-                    self.rect.left = rect.right
+            print("Self rect:", self.rect.topleft, self.rect.bottomright)
+            print("Coll rect", rect.topleft, rect.bottomright)
+            print("======================================================")
 
     def controll_velocity(self):
-        if self.velocity[0] == 0 and self.acceleration[0] == 0:
+        if int(self.velocity[0]) == 0 and self.acceleration[0] == 0:
             self.resistance[0] = 0
-        self.velocity[0] += int(self.acceleration[0]-self.resistance[0])
-        self.velocity[1] += int(self.acceleration[1]-self.resistance[1])
+        self.velocity[0] += self.acceleration[0]-self.resistance[0]
+        self.velocity[1] += self.acceleration[1]-self.resistance[1]
 
         if abs(self.velocity[0]) > Constant.VELOCITY_X_LIM:
             self.velocity[0] = (self.velocity[0] / abs(self.velocity[0])) * Constant.VELOCITY_X_LIM
+        if abs(self.velocity[1]) > Constant.VELOCITY_Y_LIM:
+            self.velocity[1] = (self.velocity[1] / abs(self.velocity[1])) * Constant.VELOCITY_Y_LIM
 
 
     
     def update(self, *args: Any, **kwargs: Any) -> None:
-        if self.velocity[0] or self.velocity[1]:
-            self.pre_rect = self.rect.copy()
-        self.rect.x += self.velocity[0]
+        # if self.velocity[0] or self.velocity[1]:
+            # self.pre_rect = self.rect.copy()
+
+        self.rect.y -= int(self.velocity[1])
         col_sprite = pygame.sprite.spritecollideany(self, kwargs["sprites"])
-        self.movement_impact(col_sprite)
-        self.rect.y -= self.velocity[1]
+        self.handle_yaxis_collision(col_sprite)
+
+        self.rect.x += int(self.velocity[0])
         col_sprite = pygame.sprite.spritecollideany(self, kwargs["sprites"])
-        self.movement_impact(col_sprite)
+        self.handle_xaxis_collision(col_sprite)
         
+        # self.rect.y -= self.velocity[1]
+        # col_sprite = pygame.sprite.spritecollideany(self, kwargs["sprites"])
+        # self.movement_impact(col_sprite)
+
         self.controll_velocity()
     
     def move_left(self, movement=True):
@@ -98,34 +160,94 @@ class Object(pygame.sprite.Sprite):
 
     
 
+
+
 class Player(Object):
+    STANDING = 's'
+    RUNNING = 'r'
+    JUMP = 'j'
+    FIGHT = 'f'
     
     def __init__(self, img_path: str) -> None:
         super().__init__(img_path, True)
+        self.rect = pygame.Rect(0, 0, Constant.BOX[0], int(Constant.BOX[1] * 1.75))
         self.set_position(100, -100)
+        self.load_animations(AssetLoader.PLAYER)
+        self.anim_direction = [1, 1]
+        self.anim_state = self.STANDING
+
     
     def handle_keydown(self, key):
         if key == pygame.K_LEFT:
-            # self.velocity[0] -= Constant.CHAR_SPEED
             self.move_left()
-        # if key == pygame.K_UP:
-        #     self.velocity[1] += Constant.CHAR_SPEED
-        # if key == pygame.K_DOWN:
-        #     self.velocity[1] -= Constant.CHAR_SPEED
         if key == pygame.K_RIGHT:
-            # self.velocity[0] += Constant.CHAR_SPEED
             self.move_right()
         if key == pygame.K_SPACE:
-            self.velocity[1] = Constant.JUMP_VELOCITY
+            self.make_jump()
+        if key == pygame.K_x:
+            self.do_fight()
     
     def handle_keyup(self, key):
         if key == pygame.K_LEFT:
-            # self.velocity[0] = 0
             self.move_left(False)
-        # if key == pygame.K_UP:
-        #     self.velocity[1] = 0
-        # if key == pygame.K_DOWN:
-        #     self.velocity[1] = 0
         if key == pygame.K_RIGHT:
             self.move_right(False)
+    
+    def do_fight(self):
+        self.velocity[0]=0
+        self.anim_state=self.FIGHT
+        self._frame_reset()
+    
+    def make_jump(self):
+        self.velocity[1] = Constant.JUMP_VELOCITY
+    
+
+    def _frame_reset(self):
+        self.frame_count = 0
+        # self.curr_frame = 0
+        self.anim_frame = 0
+
+    def animation_state_switch(self):
+        if int(self.velocity[0]) == 0 and self.anim_state==self.FIGHT:
+            if self.anim_frame==len(self.animations[self.anim_state]):
+                self.anim_state = self.STANDING
+                self._frame_reset()
+                    
+        elif int(self.velocity[0]) == 0 and self.anim_state!=self.STANDING:
+            self.anim_state = self.STANDING
+            self._frame_reset()
+        
+        elif int(self.velocity[0]) > 0:
+            if self.anim_state == self.RUNNING:
+                self.anim_direction[0] = 1
+            else:
+                self.anim_state = self.RUNNING
+                self._frame_reset()
+        
+        elif int(self.velocity[0]) < 0:
+            if self.anim_state == self.RUNNING:
+                self.anim_direction[0] = -1
+            else:
+                self.anim_state = self.RUNNING
+                self._frame_reset()
+    
+
+    def animate(self):
+        self.animation_state_switch()
+        # self.frame_count += 1
+        if (self.frame_count) % self.delays[self.anim_state] == 0:
+            self.anim_frame = (self.anim_frame % len(self.animations[self.anim_state])) + 1
+            self.frame_count = 0
+        self.frame_count += 1
+        
+        self.image = self.animations[self.anim_state][self.anim_frame-1]
+        if self.anim_direction[0] < 0:
+            self.image = pygame.transform.flip(self.image, True, False)
+        # center = self.rect.center
+        # self.rect = self.image.get_rect()
+        # self.rect.center = center
+
             
+
+            
+

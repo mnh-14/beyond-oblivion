@@ -1,6 +1,5 @@
 from __future__ import annotations
 import os
-import select
 import sys
 from typing import Any, List
 import pygame
@@ -44,10 +43,13 @@ class Game:
         self.char.update(sprites=self.game_object_group.camera_captured_sprites())
         # self.camera.center = self.char.rect.center
         self.camera.follow_target(self.char.rect)
+        if self.char.rect.bottom > self.game_object_group.dimension[1]:
+            sys.exit()
 
 
     def view_chapter0(self):
         self.game_object_group.draw(self.screen)
+        self.char.animate()
         self.char.show(self.screen, self.camera)
 
     
@@ -68,7 +70,7 @@ class Game:
 
     def gameplay(self):
         while True:
-            self.screen.fill((0,0,0))
+            self.screen.fill((168, 162, 158))
             ph, ph_no = self.current_phase.split("-")
             self.phases[ph][ph_no][Game.EVENTS]()
             self.phases[ph][ph_no][Game.LOGIC]()
@@ -77,11 +79,13 @@ class Game:
             self.fps_clock.tick(Constant.FPS)
     
     def handle_graphic(self):
+        return
         self.game_object_group.draw(self.screen)
         self.char.show(self.screen, self.camera)
     
 
     def handle_logic(self):
+        return
         # self.char.move()
         self.char.update(spritegroup=self.game_object_group)
         # self.camera.center = self.char.rect.center
@@ -90,6 +94,7 @@ class Game:
         self.camera.follow_target(self.char.rect)
     
     def handle_event(self):
+        return
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 sys.exit()
@@ -114,9 +119,11 @@ class Game:
                         continue
                     o = Object(str(os.path.join(*Constant.TILEMAP[ch])))
                     o.set_position(nx*Constant.BOX[0], ny*Constant.BOX[1])
+                    # o.set_center_pos(nx*Constant.BOX[0]+Constant.BOX[0]//2, ny*Constant.BOX[1]+Constant.BOX[1]//2)
                     game_objects_group.add(o)
                     nx += 1
                 ny += 1
+            game_objects_group.set_dimension(nx*Constant.BOX[0], ny*Constant.BOX[1])
         
         # return game_world_objects
         return game_objects_group
@@ -129,6 +136,11 @@ class CameraGroup(pygame.sprite.Group):
     def __init__(self, *sprites: Any | AbstractGroup, camera:Camera) -> None:
         super().__init__(*sprites)
         self.camera = camera
+        self.dimension = [0,0]
+    
+    def set_dimension(self, x, y):
+        self.dimension[0] = x
+        self.dimension[1] = y
     
     def draw(self, surface: pygame.Surface, bgsurf: pygame.Surface | None = None, special_flags: int = 0) -> List[pygame.Rect]:
         sprites = self.camera_captured_sprites()
@@ -181,4 +193,14 @@ class Camera:
         return self.rect.colliderect(object_rect)
     
     def follow_target(self, target: pygame.Rect):
-        self.rect.center = target.center
+        # self.rect.center = target.center
+        dx, dy = self.rect.centerx - target.centerx, self.rect.centery - target.centery
+        if abs(dx) > Constant.CAMERA_FOCUS[0]:
+            dx = dx // Constant.CAMERA_SMOOTHER
+            dx = dx if abs(dx)<=Constant.CAMERA_SPEED_LIM else ((dx)//abs(dx))*Constant.CAMERA_SPEED_LIM
+            self.rect.centerx -= dx
+        if abs(dy) > Constant.CAMERA_FOCUS[1]:
+            dy = dy // Constant.CAMERA_SMOOTHER
+            dy = dy if abs(dy)<=Constant.CAMERA_SPEED_LIM else ((dy)//abs(dy))*Constant.CAMERA_SPEED_LIM
+            self.rect.centery -= dy
+

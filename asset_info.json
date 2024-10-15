@@ -1,0 +1,16 @@
+{
+    "player" : {
+        "source": ["asset", "character"],
+        "resize": 1,
+        "frames": {
+            "s": 6,
+            "f": 6,            
+            "r": 10
+        },
+        "delay": {
+            "s": 4,
+            "f": 3,            
+            "r": 4
+        }
+    }
+}

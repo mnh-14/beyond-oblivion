@@ -187,8 +187,10 @@ class Player(Object):
     def handle_keydown(self, key, **kwargs):
         if key == pygame.K_LEFT:
             self.move_left()
+            print(self.rect.center)
         if key == pygame.K_RIGHT:
             self.move_right()
+            print(self.rect.center)
         if key == pygame.K_SPACE:
             self.make_jump()
         if key == pygame.K_x:

@@ -8,6 +8,14 @@ from settings import AssetLoader, Constant
 
 class Chapter3(Chapter):
     WOLRD = ("asset", "world", "chap3.txt")
+    puzzle_1_finished = False;puzzle_2_finished = False;puzzle_3_finished = False
+
+    riddles = {
+        1 : ("I give you option-To choose between two-You cannot choose both but only one-Got any clue?", "XOR"),
+        2 : ("When one calls himself-He carries things on,-Being baseless makes him-Forever gone.", "Recursion"),
+        3 : ("A number when number++-Cannot be found,-Make sure that every resource-Stays within the bound.", "403")
+    }
+
     TEXTING = 't'
     def __init__(self) -> None:
         super().__init__()
@@ -62,6 +70,9 @@ class Chapter3(Chapter):
         self.bg_objects.draw(self.game.screen)
         self.main_char.animate()
         self.main_char.show(self.game.screen, self.camera)
+        if self.puzzle_1_finished == False:
+            for i in range(15):
+                pygame.draw.line(self.game.screen, (0, 0, 0), (4080 + 10*i, 616), (4080 + 10*i, 650), width=2)
         if self.state == self.TEXTING:
             self.texbox.show_text(self.game.screen, self.main_char.rect, self.game.camera)
         for ch in self.characters:

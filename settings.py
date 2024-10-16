@@ -13,8 +13,8 @@ class Constant:
     FPS = 60
     CHAR_SPEED = 5
     VELOCITY_X_LIM = 6
-    JUMP_VELOCITY = 20
-    VELOCITY_Y_LIM = 15
+    JUMP_VELOCITY = 30
+    VELOCITY_Y_LIM = 25
     DEFAULT_ACCELERATION = 3
     RESISTANCE_DECELERATION = 0.4
     DEFAULT_GRAVITY = 1
@@ -27,7 +27,8 @@ class Constant:
     TEXT_BOX_INFLATION = (15,15)
     TEXT_BOX_RADIUS = 6
     GAME_WORLD = {
-        1: ('asset', 'world', 'world1.txt')
+        1: ('asset', 'world', 'world1.txt'),
+        2: ('asset', 'world', 'chap3.txt')
     }
     TILEMAP = {
         't': ('asset', 'tiles', 'tile_0001.png'),

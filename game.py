@@ -98,7 +98,8 @@ class Game:
     
 
     @staticmethod
-    def create_game_world(world_no:int, camera:pygame.rect.Rect, location:tuple[str]=Constant.GAME_WORLD[1]):
+    def create_game_world(world_no:int, camera:pygame.rect.Rect):
+        location = Constant.GAME_WORLD[world_no]
         game_objects_group = CameraGroup(camera=camera)
         with open(os.path.join(*location), 'r') as game_text:
             nx,ny=0,0
@@ -120,7 +121,7 @@ class Game:
         return game_objects_group
 
     @staticmethod
-    def create_game_world2(camera:pygame.rect.Rect, location:tuple[str]=Constant.GAME_WORLD[1]):
+    def create_game_world2(camera:pygame.rect.Rect, location:tuple[str]=Constant.GAME_WORLD[2]):
         all_object:dict[str, CameraGroup] = {}
         with open(os.path.join(*location), 'r') as game_text:
             nx,ny=0,0

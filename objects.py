@@ -1,4 +1,5 @@
 from __future__ import annotations
+from re import S
 from typing import Any
 import pygame
 
@@ -215,18 +216,18 @@ class Player(Object):
                 self.anim_state = self.STANDING
                 self._frame_reset()
                     
-        elif int(self.velocity[0]) == 0 and self.anim_state!=self.STANDING:
+        elif (int(self.velocity[0]) == 0 and int(self.acceleration[0]==0)) and self.anim_state!=self.STANDING:
             self.anim_state = self.STANDING
             self._frame_reset()
         
-        elif int(self.velocity[0]) > 0:
+        elif int(self.velocity[0]) > 0 or int(self.acceleration[0]) > 0:
             if self.anim_state == self.RUNNING:
                 self.anim_direction[0] = 1
             else:
                 self.anim_state = self.RUNNING
                 self._frame_reset()
         
-        elif int(self.velocity[0]) < 0:
+        elif int(self.velocity[0]) < 0 or int(self.acceleration[0]) < 0:
             if self.anim_state == self.RUNNING:
                 self.anim_direction[0] = -1
             else:

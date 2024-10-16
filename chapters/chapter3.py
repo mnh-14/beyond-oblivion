@@ -2,10 +2,11 @@ import os
 
 from chapters.chapter import Chapter
 from objects import Player
-from settings import Constant
+from settings import AssetLoader, Constant
 
 
 class Chapter3(Chapter):
+    WOLRD = ("asset", "worlds", )
     def __init__(self) -> None:
         super().__init__()
         ppath = Player(os.path.join(*Constant.TILEMAP['c']))
@@ -13,5 +14,7 @@ class Chapter3(Chapter):
     
     def initiate_chapter(self, game):
         super().initiate_chapter(game)
+        for ch in self.characters:
+            ch.load_animations(AssetLoader.PLAYER)
         self.characters.append(self.main_char)
         self.chidx = len(self.characters)-1

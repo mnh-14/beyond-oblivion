@@ -76,6 +76,7 @@ class Object(pygame.sprite.Sprite):
         dy = obj.rect.centery - self.rect.centery
         if impact_type==Object.RESTRICT_IMPACT:
             self.velocity[1] = 0
+            # print("Changed v", self.velocity)
             if dy < 0:
                 self.rect.top = obj.rect.bottom
             if dy > 0:
@@ -128,6 +129,7 @@ class Object(pygame.sprite.Sprite):
     def update(self, *args: Any, **kwargs: Any) -> None:
         # if self.velocity[0] or self.velocity[1]:
             # self.pre_rect = self.rect.copy()
+        self.controll_velocity()
 
         self.rect.y -= int(self.velocity[1])
         col_sprite = pygame.sprite.spritecollideany(self, kwargs["sprites"])
@@ -141,7 +143,6 @@ class Object(pygame.sprite.Sprite):
         # col_sprite = pygame.sprite.spritecollideany(self, kwargs["sprites"])
         # self.movement_impact(col_sprite)
 
-        self.controll_velocity()
     
     def move_left(self, movement=True):
         if movement:
@@ -199,7 +200,8 @@ class Player(Object):
         self._frame_reset()
     
     def make_jump(self):
-        self.velocity[1] = Constant.JUMP_VELOCITY
+        if int(self.velocity[1])==0:
+            self.velocity[1] = Constant.JUMP_VELOCITY
     
 
     def _frame_reset(self):

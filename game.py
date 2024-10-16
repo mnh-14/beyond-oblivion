@@ -37,8 +37,8 @@ class Game:
         while True:
             self.screen.fill((130, 130, 170))
             ph, ph_no = self.current_phase.split("-")
-            self.cphase[int(ph_no)].handle_event()
             self.cphase[int(ph_no)].handle_logic()
+            self.cphase[int(ph_no)].handle_event()
             self.cphase[int(ph_no)].handle_graphics()
             pygame.display.flip()
             self.fps_clock.tick(Constant.FPS)

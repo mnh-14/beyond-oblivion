@@ -6,6 +6,7 @@ import pygame
 from pygame.sprite import AbstractGroup
 from settings import Constant
 from objects import Object, Player
+from chapters.chapter0 import Chapter0
 
 class Game:
     LOGIC = "l"
@@ -20,17 +21,10 @@ class Game:
         self.camera = Camera(self.screen.get_rect())
         self.game_object_group = Game.create_game_world(1, self.camera)
         # self.game_object_group.add(self.char)
+        self.chapter0 = Chapter0()
+        self.chapter0.set_game(self)
         self.current_phase = "ch-0"
-        self.phases = {
-            "ch": {
-                "0": {Game.LOGIC: self.chapter0, Game.GRAPHICS: self.view_chapter0, Game.EVENTS: self.chapter0_events},
-                "1": {Game.LOGIC: self.chapter0, Game.GRAPHICS: self.view_chapter0, Game.EVENTS: self.chapter0_events}
-            },
-            "cut":{
-                "0":{}
-            }
-
-        }
+        self.cphase = [self.chapter0]
 
 
     def _set_camera(self):
@@ -38,37 +32,20 @@ class Game:
         self.camera.center = self.char.rect.center
 
 
-    def chapter0(self):
-        # self.char.move()
-        self.char.update(sprites=self.game_object_group.camera_captured_sprites())
-        # self.camera.center = self.char.rect.center
-        self.camera.follow_target(self.char.rect)
-        if self.char.rect.bottom > self.game_object_group.dimension[1]:
-            sys.exit()
 
-
-    def view_chapter0(self):
-        self.game_object_group.draw(self.screen)
-        self.char.animate()
-        self.char.show(self.screen, self.camera)
-
-    
-    def chapter0_events(self):
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                sys.exit()
-            
-            if event.type == pygame.KEYDOWN:
-                self.char.handle_keydown(event.key)
-            
-            if event.type == pygame.KEYUP:
-                self.char.handle_keyup(event.key)
-        
-
-
+    def gameplay2(self):
+        while True:
+            self.screen.fill((130, 130, 170))
+            ph, ph_no = self.current_phase.split("-")
+            self.cphase[int(ph_no)].handle_event()
+            self.cphase[int(ph_no)].handle_logic()
+            self.cphase[int(ph_no)].handle_graphics()
+            pygame.display.flip()
+            self.fps_clock.tick(Constant.FPS)
 
 
     def gameplay(self):
+        return
         while True:
             self.screen.fill((130, 130, 170))
             ph, ph_no = self.current_phase.split("-")

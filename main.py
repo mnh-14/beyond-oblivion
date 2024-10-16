@@ -12,4 +12,4 @@ pygame.display.set_caption(Constant.GAME_NAME)
 
 if __name__=="__main__":
     game = Game(screen)
-    game.gameplay()
+    game.gameplay2()

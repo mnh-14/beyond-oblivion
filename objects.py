@@ -265,23 +265,20 @@ class TextBox:
         self.font = pygame.font.Font(None, Constant.FONT_SIZE)
         self.text = ""
         self.lines = []
-        self.printed_lines = []
         self.current_line = ""
-        self.curr_letter = ""
         self.curr_line_idx = 0
         self.line_rects: list[pygame.Rect] = []
         self.line_surface: list[pygame.Surface] = []
         self.frame = 0
-        self.delay = 2
         self.rect = pygame.Rect(0, 0, 1, 1)
         self.rr: pygame.Rect = None
         self.is_finished = False
     
     def set_text(self, txt:str):
         self.text = txt
-        words = txt.split()
-        horizontal_count = int(len(words) * Constant.TEXT_BOX_DIM_R[0] // Constant.TEXT_BOX_DIM_R[2]) + 1
-        vertical_count = int(len(words) * Constant.TEXT_BOX_DIM_R[1] // Constant.TEXT_BOX_DIM_R[2]) * Constant.TEXT_BOX_DIM_CONST[1]
+        words = txt.split(" ")
+        horizontal_count = int((len(words) * Constant.TEXT_BOX_DIM_R[0]) // Constant.TEXT_BOX_DIM_R[2]) + 1
+        vertical_count = int((len(words) * Constant.TEXT_BOX_DIM_R[1]) // Constant.TEXT_BOX_DIM_R[2]) * Constant.TEXT_BOX_DIM_CONST[1]
         lws = []
         for w in words:
             lws.append(w)
@@ -291,29 +288,29 @@ class TextBox:
         if len(lws) != 0:
             self.lines.append(" ".join(lws))
             lws = []
-        self.current_line = self.lines[0]
+        self.current_line = ""
         for l in self.lines:
             s:pygame.Surface = self.font.render(l, True, Constant.TEXT_FONT_COLOR)
             self.line_surface.append(s)
-            self.line_rects.append(s.get_rect)
+            self.line_rects.append(s.get_rect())
         self.rect.width = max([r.width for r in self.line_rects])
         self.rect.height = self.line_rects[0].height * len(self.line_rects)
         self.is_finished = False
 
     def _set_position(self, target:pygame.Rect):
         self.rect.centerx = target.centerx
-        dy = target.width//2 + self.rect.width // 2 + Constant.TEXT_BOX_OFFSET
+        dy = target.height//2 + self.rect.height // 2 + Constant.TEXT_BOX_OFFSET
         self.rect.centery = target.centery - dy
         self.rr = self.rect.copy()
-        self.rr.inflate_ip(10, 10)
+        self.rr.inflate_ip(*Constant.TEXT_BOX_INFLATION)
         self.rr.center = self.rect.center
 
-
     
-    def show_text(self, screen:pygame.Surface, target:pygame.rect):
+    def show_text(self, screen:pygame.Surface, target:pygame.rect, camera):
         self._set_position(target)
-        pygame.draw.rect(screen, (255, 255, 255), self.rr, width=0, border_radius=3)
-        pygame.draw.rect(screen, (0,0,0), self.rr, width=3, border_radius=3)
+        rad = Constant.TEXT_BOX_RADIUS
+        pygame.draw.rect(screen, (255, 255, 255), camera.relative_rect(self.rr), width=0, border_radius=rad)
+        pygame.draw.rect(screen, (0,0,0), camera.relative_rect(self.rr), width=3, border_radius=rad)
         
         tl = self.rect.topleft
         idx = 0
@@ -321,11 +318,14 @@ class TextBox:
             self.line_rects[idx].topleft = tl
             if idx == self.curr_line_idx:
                 break
-            screen.blit(self.line_surface[idx], self.line_rects[idx])
+            screen.blit(self.line_surface[idx], camera.relative_rect(self.line_rects[idx]))
             tl = self.line_rects[idx].bottomleft
+        if self.is_finished:
+            return
         if self.frame == len(self.lines[self.curr_line_idx]):
             self.frame = 0
             self.curr_line_idx += 1
+            self.current_line = ""
         
         if self.curr_line_idx == len(self.lines):
             self.is_finished = True
@@ -335,7 +335,7 @@ class TextBox:
         img = self.font.render(self.current_line, True, Constant.TEXT_FONT_COLOR)
         img_rect = img.get_rect()
         img_rect.topleft = tl
-        screen.blit(img, img_rect)
+        screen.blit(img, camera.relative_rect(img_rect))
         self.frame += 1
         
         

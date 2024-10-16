@@ -18,6 +18,12 @@ class Constant:
     DEFAULT_ACCELERATION = 3
     RESISTANCE_DECELERATION = 0.4
     DEFAULT_GRAVITY = 1
+    FONT_SIZE = 15
+    TEXT_DELAY = 2
+    TEXT_BOX_DIM_R = (5, 3, 8)
+    TEXT_BOX_DIM_CONST = (10, 6)
+    TEXT_FONT_COLOR = (255,255,255)
+    TEXT_BOX_OFFSET = 10
     GAME_WORLD = {
         1: ('asset', 'world', 'world1.txt')
     }

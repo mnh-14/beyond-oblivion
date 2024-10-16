@@ -12,19 +12,17 @@ class Chapter3(Chapter):
     def __init__(self) -> None:
         super().__init__()
         ppath = os.path.join(*Constant.TILEMAP['c'])
-        self.characters = [Player(ppath), Player(ppath)]
+        # self.characters = [Player(ppath), Player(ppath)]
         self.texbox = TextBox()
         self.state = ""
     
     def initiate_chapter(self, game):
         super().initiate_chapter(game)
-        for ch in self.characters:
-            ch.load_animations(AssetLoader.PLAYER)
-        self.characters.append(self.main_char)
-        self.chidx = len(self.characters)-1
-        self.bg_objects = self.game.create_game_world(3, self.game.camera, self.WOLRD)
-        for char in self.characters:
-            char.set_center_pos(*self.game.screen.get_rect().center)
+        self.all_objects = self.game.create_game_world2(self.game.camera, self.WOLRD)
+        self.characters = [char for char in self.all_objects["c"]]
+        self.bg_objects = self.all_objects["t"]
+        self.main_char = self.characters[0]
+        self.chidx = 0
     
     def toggle_main_char(self):
         self.chidx = (self.chidx+1) % len(self.characters)

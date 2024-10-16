@@ -10,6 +10,10 @@ from objects import Object, Player
 from chapters.chapter0 import Chapter0
 
 class Game:
+    REFER = {
+        "t": Object,
+        "c": Player
+    }
     LOGIC = "l"
     GRAPHICS = "g"
     EVENTS = "e"
@@ -21,6 +25,7 @@ class Game:
         self._set_camera()
         self.camera = Camera(self.screen.get_rect())
         self.game_object_group = Game.create_game_world(1, self.camera)
+        self.game_dimension = ()
         # self.game_object_group.add(self.char)
         self.chapter0 = Chapter0()
         self.chapter0.initiate_chapter(self)
@@ -113,6 +118,28 @@ class Game:
         
         # return game_world_objects
         return game_objects_group
+
+    @staticmethod
+    def create_game_world2(camera:pygame.rect.Rect, location:tuple[str]=Constant.GAME_WORLD[1]):
+        all_object:dict[str, CameraGroup] = {}
+        with open(os.path.join(*location), 'r') as game_text:
+            nx,ny=0,0
+            for line in game_text:
+                nx=0
+                for ch in line.strip():
+                    if ch=='0' or ch==" ":
+                        nx += 1
+                        continue
+                    o = Game.REFER[ch](str(os.path.join(*Constant.TILEMAP[ch])))
+                    o.set_center_pos(nx*Constant.BOX[0]+Constant.BOX[0]//2, ny*Constant.BOX[1]+Constant.BOX[1]//2)
+                    avail_group = all_object.get(ch, None)
+                    if avail_group is None:
+                        all_object[ch] = CameraGroup(camera=camera)
+                    all_object[ch].add(o)
+                    nx += 1
+                ny += 1
+        
+        return all_object
                     
 
                 

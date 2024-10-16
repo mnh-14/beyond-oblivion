@@ -4,6 +4,7 @@ import sys
 from typing import Any, List
 import pygame
 from pygame.sprite import AbstractGroup
+from chapters.chapter3 import Chapter3
 from settings import Constant
 from objects import Object, Player
 from chapters.chapter0 import Chapter0
@@ -25,11 +26,18 @@ class Game:
         self.chapter0.initiate_chapter(self)
         self.current_phase = "ch-0"
         self.cphase = [self.chapter0]
+        self._set_chapters()
 
 
     def _set_camera(self):
         self.camera = self.screen.get_rect().copy()
         self.camera.center = self.char.rect.center
+    
+    def _set_chapters(self):
+        chapter3 = Chapter3()
+        chapter3.initiate_chapter(self)
+        self.cphase.append(chapter3)
+        self.current_phase = "ch-1"
 
 
 
@@ -84,9 +92,9 @@ class Game:
     
 
     @staticmethod
-    def create_game_world(world_no:int, camera:pygame.rect.Rect):
+    def create_game_world(world_no:int, camera:pygame.rect.Rect, location:tuple[str]=Constant.GAME_WORLD[1]):
         game_objects_group = CameraGroup(camera=camera)
-        with open(os.path.join(*Constant.GAME_WORLD[1]), 'r') as game_text:
+        with open(os.path.join(*location), 'r') as game_text:
             nx,ny=0,0
             for line in game_text:
                 nx=0

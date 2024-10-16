@@ -1,5 +1,6 @@
 from __future__ import annotations
 from re import S
+from tkinter import NO
 from typing import Any
 import pygame
 
@@ -169,6 +170,8 @@ class Player(Object):
     RUNNING = 'r'
     JUMP = 'j'
     FIGHT = 'f'
+    DYING = 'd'
+    HURT = 'h'
     
     def __init__(self, img_path: str) -> None:
         super().__init__(img_path, True)
@@ -177,9 +180,11 @@ class Player(Object):
         self.load_animations(AssetLoader.PLAYER)
         self.anim_direction = [1, 1]
         self.anim_state = self.STANDING
+        self.talking = False
+        self.alive = True
 
     
-    def handle_keydown(self, key):
+    def handle_keydown(self, key, **kwargs):
         if key == pygame.K_LEFT:
             self.move_left()
         if key == pygame.K_RIGHT:
@@ -253,4 +258,88 @@ class Player(Object):
             
 
             
+
+class TextBox:
+    def __init__(self) -> None:
+        pygame.init()
+        self.font = pygame.font.Font(None, Constant.FONT_SIZE)
+        self.text = ""
+        self.lines = []
+        self.printed_lines = []
+        self.current_line = ""
+        self.curr_letter = ""
+        self.curr_line_idx = 0
+        self.line_rects: list[pygame.Rect] = []
+        self.line_surface: list[pygame.Surface] = []
+        self.frame = 0
+        self.delay = 2
+        self.rect = pygame.Rect(0, 0, 1, 1)
+        self.rr: pygame.Rect = None
+        self.is_finished = False
+    
+    def set_text(self, txt:str):
+        self.text = txt
+        words = txt.split()
+        horizontal_count = int(len(words) * Constant.TEXT_BOX_DIM_R[0] // Constant.TEXT_BOX_DIM_R[2]) + 1
+        vertical_count = int(len(words) * Constant.TEXT_BOX_DIM_R[1] // Constant.TEXT_BOX_DIM_R[2]) * Constant.TEXT_BOX_DIM_CONST[1]
+        lws = []
+        for w in words:
+            lws.append(w)
+            if len(lws) == horizontal_count:
+                self.lines.append(" ".join(lws))
+                lws = []
+        if len(lws) != 0:
+            self.lines.append(" ".join(lws))
+            lws = []
+        self.current_line = self.lines[0]
+        for l in self.lines:
+            s:pygame.Surface = self.font.render(l, True, Constant.TEXT_FONT_COLOR)
+            self.line_surface.append(s)
+            self.line_rects.append(s.get_rect)
+        self.rect.width = max([r.width for r in self.line_rects])
+        self.rect.height = self.line_rects[0].height * len(self.line_rects)
+        self.is_finished = False
+
+    def _set_position(self, target:pygame.Rect):
+        self.rect.centerx = target.centerx
+        dy = target.width//2 + self.rect.width // 2 + Constant.TEXT_BOX_OFFSET
+        self.rect.centery = target.centery - dy
+        self.rr = self.rect.copy()
+        self.rr.inflate_ip(10, 10)
+        self.rr.center = self.rect.center
+
+
+    
+    def show_text(self, screen:pygame.Surface, target:pygame.rect):
+        self._set_position(target)
+        pygame.draw.rect(screen, (255, 255, 255), self.rr, width=0, border_radius=3)
+        pygame.draw.rect(screen, (0,0,0), self.rr, width=3, border_radius=3)
+        
+        tl = self.rect.topleft
+        idx = 0
+        for idx in range(len(self.line_surface)):
+            self.line_rects[idx].topleft = tl
+            if idx == self.curr_line_idx:
+                break
+            screen.blit(self.line_surface[idx], self.line_rects[idx])
+            tl = self.line_rects[idx].bottomleft
+        if self.frame == len(self.lines[self.curr_line_idx]):
+            self.frame = 0
+            self.curr_line_idx += 1
+        
+        if self.curr_line_idx == len(self.lines):
+            self.is_finished = True
+            return
+        
+        self.current_line += self.lines[self.curr_line_idx][self.frame]
+        img = self.font.render(self.current_line, True, Constant.TEXT_FONT_COLOR)
+        img_rect = img.get_rect()
+        img_rect.topleft = tl
+        screen.blit(img, img_rect)
+        self.frame += 1
+        
+        
+        
+            
+
 

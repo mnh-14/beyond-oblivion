@@ -30,6 +30,7 @@ class Game:
 
 
     def _set_camera(self):
+        return
         self.camera = self.screen.get_rect().copy()
         self.camera.center = self.char.rect.center
     
@@ -99,7 +100,7 @@ class Game:
             for line in game_text:
                 nx=0
                 for ch in line.strip():
-                    if ch=='0':
+                    if ch=='0' or ch==" ":
                         nx += 1
                         continue
                     o = Object(str(os.path.join(*Constant.TILEMAP[ch])))
@@ -176,6 +177,9 @@ class Camera:
     
     def captured_objects(self, object_rect:pygame.Rect):
         return self.rect.colliderect(object_rect)
+    
+    def contains_object(self, rect: pygame.Rect):
+        return self.rect.contains(rect)
     
     def follow_target(self, target: pygame.Rect):
         # self.rect.center = target.center

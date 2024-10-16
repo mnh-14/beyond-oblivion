@@ -20,11 +20,14 @@ class Chapter3(Chapter):
         self.characters.append(self.main_char)
         self.chidx = len(self.characters)-1
         self.bg_objects = self.game.create_game_world(3, self.game.camera, self.WOLRD)
+        for char in self.characters:
+            char.set_center_pos(*self.game.screen.get_rect().center)
     
     def toggle_main_char(self):
         self.chidx = (self.chidx+1) % len(self.characters)
         self.main_char = self.characters[self.chidx]
     
+
     def handle_event(self):
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -39,8 +42,11 @@ class Chapter3(Chapter):
             if event.type == pygame.KEYUP:
                 self.main_char.handle_keyup(event.key)
     
+
     def handle_logic(self):
-        self.main_char.update(sprites=self.bg_objects.camera_captured_sprites())
+        if self.camera.contains_object(self.main_char.rect):
+            self.main_char.update(sprites=self.bg_objects.camera_captured_sprites())
+
         self.camera.follow_target(self.main_char.rect)
     
     def handle_graphics(self):

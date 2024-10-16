@@ -71,8 +71,10 @@ class Chapter3(Chapter):
         self.main_char.animate()
         self.main_char.show(self.game.screen, self.camera)
         if self.puzzle_1_finished == False:
-            for i in range(15):
-                pygame.draw.line(self.game.screen, (0, 0, 0), (4080 + 10*i, 616), (4080 + 10*i, 650), width=2)
+            for i in range(20):
+                rectngl = self.camera.relative_rect(pygame.Rect(4080 + 10*i, 570, 1, 75))
+                pygame.draw.rect(self.game.screen, (0, 0, 0), rectngl, width=20)
+            pygame.draw.rect(self.game.screen, (0, 0, 0), self.camera.relative_rect(pygame.Rect(4080, 570, 192, 1)), width=20)
         if self.state == self.TEXTING:
             self.texbox.show_text(self.game.screen, self.main_char.rect, self.game.camera)
         for ch in self.characters:

@@ -193,6 +193,7 @@ class Player(Object):
             print(self.rect.center)
         if key == pygame.K_SPACE:
             self.make_jump()
+            print(self.rect.center)
         if key == pygame.K_x:
             self.do_fight()
     

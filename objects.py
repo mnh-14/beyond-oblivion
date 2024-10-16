@@ -1,6 +1,6 @@
 from __future__ import annotations
 from typing import Any
-import pygame
+import pygame, json
 
 # from game import Camera
 from settings import Constant, AssetLoader
@@ -199,7 +199,10 @@ class Player(Object):
         self._frame_reset()
     
     def make_jump(self):
-        self.velocity[1] = Constant.JUMP_VELOCITY
+        jump_count = 0
+        while jump_count <= 2:
+            jump_count += 1
+            self.velocity[1] = Constant.JUMP_VELOCITY
     
 
     def _frame_reset(self):

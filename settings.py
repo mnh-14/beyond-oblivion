@@ -2,6 +2,8 @@ import os
 import pygame
 import json
 
+pygame.display.init()
+
 class Constant:
     BOX = (36,36)
     SCREEN_RATIO = (32, 20)
@@ -19,7 +21,8 @@ class Constant:
     RESISTANCE_DECELERATION = 0.4
     DEFAULT_GRAVITY = 1
     GAME_WORLD = {
-        1: ('asset', 'world', 'world1.txt')
+        1: ('asset', 'world', 'world1.txt'),
+        2: ('asset', 'world', 'Backgrounds Collection', 'Steampunk', 'background 3', 'orig.png'),
     }
     TILEMAP = {
         't': ('asset', 'tiles', 'tile_0001.png'),
@@ -68,3 +71,6 @@ class AssetLoader:
                 images[key].append(img)
         
         return images, delays
+    
+
+print(Constant.SCREEN_RES)

@@ -22,7 +22,7 @@ class Game:
         self.game_object_group = Game.create_game_world(1, self.camera)
         # self.game_object_group.add(self.char)
         self.chapter0 = Chapter0()
-        self.chapter0.set_game(self)
+        self.chapter0.initiate_chapter(self)
         self.current_phase = "ch-0"
         self.cphase = [self.chapter0]
 

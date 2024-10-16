@@ -5,11 +5,17 @@ class Chapter(ABC):
         # pass
         from game import Game
         self.game: Game = None
+        self.finished = False
+        self.current_phase = ""
+        self.phases = {}
     
-    def set_game(self, game):
+    def initiate_chapter(self, game):
         self.game = game
         self.main_char = self.game.char
         self.camera = self.game.camera
+    
+    def is_finished(self):
+        return self.finished
 
     @abstractmethod
     def handle_logic(self):

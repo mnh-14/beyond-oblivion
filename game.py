@@ -15,7 +15,8 @@ class Game:
         "t": Object,
         "c": Player,
         "p": People,
-        "e": Enemy
+        "e": Enemy,
+        "f": Object,
     }
     LOGIC = "l"
     GRAPHICS = "g"

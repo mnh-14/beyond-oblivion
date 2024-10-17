@@ -192,9 +192,12 @@ class Player(Object):
         self.anim_state = self.STANDING
         self.talking = False
         self.dead = False
+        self.health = Constant.CHAR_BASE_HEALTH
 
     
     def handle_keydown(self, key, **kwargs):
+        if self.health <= 0:
+            return
         if key == pygame.K_LEFT:
             self.move_left()
             print(self.rect.center)
@@ -208,6 +211,8 @@ class Player(Object):
             self.do_fight()
     
     def handle_keyup(self, key):
+        if self.health <= 0:
+            return
         if key == pygame.K_LEFT:
             self.move_left(False)
         if key == pygame.K_RIGHT:
@@ -222,9 +227,23 @@ class Player(Object):
         if int(self.velocity[1])==0:
             self.velocity[1] = Constant.JUMP_VELOCITY
     
-    def kill_character(self):
-        self.dead = True
+    def got_shot(self, damage:int=Constant.BASE_BULLETE_DAMAGE):
+        if self.anim_state == self.DYING:
+            return
+        # self.dead = True
+        # self.alive = False
+        if self.health > 0:
+            self.health -= damage
+
+        self._frame_reset()
         self.anim_state = self.DYING
+        self.acceleration[0] = 0
+    
+
+    def stop_movement(self):
+        self.acceleration[0] = 0
+
+            
     
 
     def _frame_reset(self):
@@ -234,9 +253,11 @@ class Player(Object):
 
     def animation_state_switch(self):
         if self.dead:
+            return
+        if self.health <= 0:
             if self.anim_frame==len(self.animations[self.anim_state]):
-                del self
-                return
+                self.dead = True
+            return
         if int(self.velocity[0]) == 0 and self.anim_state==self.FIGHT:
             if self.anim_frame==len(self.animations[self.anim_state]):
                 self.anim_state = self.STANDING
@@ -264,6 +285,8 @@ class Player(Object):
     def animate(self):
         self.animation_state_switch()
         # self.frame_count += 1
+        if self.dead:
+            return
         if (self.frame_count) % self.delays[self.anim_state] == 0:
             self.anim_frame = (self.anim_frame % len(self.animations[self.anim_state])) + 1
             self.frame_count = 0
@@ -312,10 +335,12 @@ class TextBox:
         self.is_finished = False
         self.delay_count = 0
         self.delay = delay
+        self.font_size_mul = font_size_mult
     
     def set_text(self, txt:str):
-        self.text = txt
-        words = txt.split(" ")
+        self.__init__(self.font_size_mul, self.delay)
+        self.text = txt.strip()
+        words = self.text.split(" ")
         horizontal_count = int((len(words) * Constant.TEXT_BOX_DIM_R[0]) // Constant.TEXT_BOX_DIM_R[2]) + 1
         vertical_count = int((len(words) * Constant.TEXT_BOX_DIM_R[1]) // Constant.TEXT_BOX_DIM_R[2]) * Constant.TEXT_BOX_DIM_CONST[1]
         lws = []
@@ -365,12 +390,12 @@ class TextBox:
         if self.is_finished:
             return
         if calc:
-            if self.frame == len(self.lines[self.curr_line_idx]):
+            if self.frame >= len(self.lines[self.curr_line_idx]):
                 self.frame = 0
                 self.curr_line_idx += 1
                 self.current_line = ""
             
-            if self.curr_line_idx == len(self.lines):
+            if self.curr_line_idx >= len(self.lines):
                 self.is_finished = True
                 return
             self.current_line += self.lines[self.curr_line_idx][self.frame]

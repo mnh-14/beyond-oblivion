@@ -34,6 +34,8 @@ class Constant:
     TILEMAP = {
         't': ('asset', 'tiles', 'tile_0001.png'),
         'c': ('asset', 'character', 'tile_0006.png'),
+        'p': ('asset', 'character', 'tile_0006.png'),
+        'e': ('asset', 'character', 'tile_0006.png')
     }
 
 
@@ -58,6 +60,8 @@ class SpriteCollection:
 
 class AssetLoader:
     PLAYER = 'player'
+    ENEMY = 'enemy'
+    PEOPLE = 'people'
     SOURCE = 'source'
     RESIZE = 'resize'
     FRAMES = 'frames'
@@ -75,6 +79,7 @@ class AssetLoader:
             delays[key] = data[self.DELAY][key]
             for i in range(1, data[self.FRAMES][key]+1):
                 img = pygame.image.load(os.path.join(*data[self.SOURCE], key, str(i)+'.png')).convert_alpha()
+                # img.fill((200,50,50), special_flags=pygame.BLEND_RGB_SUB)
                 images[key].append(img)
         
         return images, delays

@@ -3,6 +3,42 @@
         "source": ["asset", "character"],
         "resize": 1,
         "frames": {
+            "s": 7,
+            "f": 12,            
+            "r": 10,
+            "d": 6,
+            "h": 4
+        },
+        "delay": {
+            "s": 5,
+            "f": 4,            
+            "r": 8,
+            "d": 4,
+            "h": 4
+        }
+    },
+    "enemy" : {
+        "source": ["asset", "enemy"],
+        "resize": 1,
+        "frames": {
+            "s": 25,
+            "f": 4,            
+            "r": 10,
+            "d": 6,
+            "h": 5
+        },
+        "delay": {
+            "s": 10,
+            "f": 4,            
+            "r": 8,
+            "d": 4,
+            "h": 4
+        }
+    },
+    "people" : {
+        "source": ["asset", "people"],
+        "resize": 1,
+        "frames": {
             "s": 6,
             "f": 6,            
             "r": 10,
@@ -10,7 +46,7 @@
             "h": 3
         },
         "delay": {
-            "s": 4,
+            "s": 5,
             "f": 4,            
             "r": 8,
             "d": 4,

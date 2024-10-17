@@ -1,6 +1,4 @@
 from __future__ import annotations
-from re import S
-from tkinter import NO
 from typing import Any
 import pygame
 
@@ -19,15 +17,27 @@ class Object(pygame.sprite.Sprite):
         self.rect = self.image.get_rect()
         # self.rect = pygame.Rect(0, 0, Constant.BOX[0], Constant.BOX[1])
         self.pre_rect = self.rect.copy()
+        self.anim_direction = [1, 1]
         self.rect.center = (0,0)
         self.velocity = [0,0]
         self.resistance = [0, 0]
         self.acceleration = [0, 0]
         self.acceleration[1] = -1 * Constant.DEFAULT_GRAVITY if gravity else 0
         self.passthrough = passthrough
+        self.direction = 1
     
+    def get_image_rect(self):
+        rect = self.image.get_rect()
+        rect.bottom = self.rect.bottom
+        if self.anim_direction[0] > 0:
+            rect.left = self.rect.left
+        else:
+            rect.right = self.rect.right
+        return rect
+
     def show(self, screen:pygame.Surface, camera):
-        rel_rect = camera.relative_rect(self.rect)
+        rect = self.get_image_rect()
+        rel_rect = camera.relative_rect(rect)
         screen.blit(self.image, rel_rect)
     
     def load_animations(self, animation_cat):
@@ -262,9 +272,25 @@ class Player(Object):
         self.image = self.animations[self.anim_state][self.anim_frame-1]
         if self.anim_direction[0] < 0:
             self.image = pygame.transform.flip(self.image, True, False)
-        # center = self.rect.center
+        # x = self.rect.centerx
+        # b = self.rect.bottom
+        # # center = self.rect.center
         # self.rect = self.image.get_rect()
+        # self.rect.centerx = x
+        # self.rect.bottom = b
         # self.rect.center = center
+
+
+class Enemy(Player):
+    def __init__(self, img_path: str) -> None:
+        super().__init__(img_path)
+        self.load_animations(AssetLoader.ENEMY)
+
+
+class People(Player):
+    def __init__(self, img_path: str) -> None:
+        super().__init__(img_path)
+        self.load_animations(AssetLoader.PEOPLE)
 
             
 

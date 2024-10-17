@@ -4,15 +4,18 @@ import sys
 from typing import Any, List
 import pygame
 from pygame.sprite import AbstractGroup
+from chapters.chapter1 import Chapter1
 from chapters.chapter3 import Chapter3
 from settings import Constant
-from objects import Object, Player
+from objects import Enemy, Object, People, Player
 from chapters.chapter0 import Chapter0
 
 class Game:
     REFER = {
         "t": Object,
-        "c": Player
+        "c": Player,
+        "p": People,
+        "e": Enemy
     }
     LOGIC = "l"
     GRAPHICS = "g"
@@ -40,10 +43,14 @@ class Game:
         self.camera.center = self.char.rect.center
     
     def _set_chapters(self):
+        self.current_phase = "ch-1"
+        # ch-1
+        chapter1 = Chapter1()
+        chapter1.initiate_chapter(self)
+        self.cphase.append(chapter1)
         chapter3 = Chapter3()
         chapter3.initiate_chapter(self)
         self.cphase.append(chapter3)
-        self.current_phase = "ch-1"
 
 
 

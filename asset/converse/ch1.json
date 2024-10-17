@@ -1,0 +1,25 @@
+{
+    "characters": ["mc", "p1", "p2", "p3", "p4", "p5", "p6"],
+    "converse":[
+        ["mc", "YOU: Hello brother how is it going", ""],
+        ["p1", "Person 1: Nothing much. Alive somehow. Why do you ask", ""],
+        ["mc", "YOU: What do you mean alive some how ? did something happen ?", ""],
+        ["p1", "Person 2: Well yes of course, yesterday my family has been captured while we were out for work", ""],
+        ["mc", "YOU: Whaattt ? By whom ?", ""],
+        ["p1", "Person 1: You know who ", ""],
+        ["mc", "YOU: Really ? are 'they' really doing this in the wild ?", ""],
+        ["p1", "Person 2: Why wouldn't they ? I won't be surprised even if they kill someone", ""],
+        ["p1", "Person 1: They've become this worst. You can ask aroundd, you'll see more of it", ""],
+        ["mc", "YOU: Of course. I am here to do just that", "finish"],
+
+        ["mc", "YOU: Hey brother, why are you alone here ?", ""],
+        ["p3", "Person 3: I am trying to hide", ""],
+        ["mc", "YOU: From whom ?", ""],
+        ["p3", "Person 3: You should know", ""],
+        ["mc", "YOU: Really ? but why ?", ""],
+        ["p3", "Person 3: You see, I took a loan for medical expences,since things are quite expensive", ""],
+        ["p3", "Person 3: But now they are asking for 10 times more money. I can't even pay my own bills, so how can I . . .", ""],
+        ["p3", "Person 3: Now I am homeless, ", ""]
+
+    ]
+}

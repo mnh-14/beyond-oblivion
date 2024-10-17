@@ -1,36 +1,31 @@
 import os, sys
+from tkinter import NO
 import pygame
 
 from chapters.chapter import Chapter
-from objects import Player, TextBox
+from objects import Bullet, Player, TextBox
 from settings import AssetLoader, Constant
 
 
-class Chapter1(Chapter):
-    WOLRD = ("asset", "world", "chap1.txt")
+class Chapter2(Chapter):
+    WOLRD = ("asset", "world", "world2.txt")
     CONV = ("asset", "converse", "ch1.json")
     puzzle_1_finished = False;puzzle_2_finished = False;puzzle_3_finished = False
 
-    riddles = {
-        1 : ("I give you option-To choose between two-You cannot choose both but only one-Got any clue?", "XOR"),
-        2 : ("When one calls himself-He carries things on,-Being baseless makes him-Forever gone.", "Recursion"),
-        3 : ("A number when number++-Cannot be found,-Make sure that every resource-Stays within the bound.", "403")
-    }
 
     TEXTING = 't'
     LOADING = 'l'
     DEFAULT = "df"
     TALKING = "tk"
     MOVEMENT = "mv"
-    MOVEMENT_AND_TEXT = "mvt"
     LEAVING = "lv"
+    FIGHTING = 'fgt'
     def __init__(self) -> None:
         super().__init__()
-        ppath = os.path.join(*Constant.TILEMAP['c'])
         # self.characters = [Player(ppath), Player(ppath)]
         self.main_char: Player = None
         self.texbox = TextBox(3, 5)
-        self.texbox.set_text("CHAPTER 1: LOADING..........!")
+        self.texbox.set_text("CHAPTER 2: LOADING..........!")
         self.state = self.LOADING
         self.frames = 0
         self.all_states = ["cs1","gp1", "cs2", "gp2", "df"]
@@ -42,11 +37,13 @@ class Chapter1(Chapter):
         super().initiate_chapter(game)
         self.all_objects = self.game.create_game_world2(self.game.camera, self.WOLRD)
         self.characters: list[Player] = [char for char in self.all_objects["c"]]
-        self.peoples: list[Player] = [char for char in self.all_objects["p"]]
+        # self.peoples: list[Player] = [char for char in self.all_objects["p"]]
+        self.peoples = self.all_objects['p']
         self.bg_objects = self.all_objects["t"]
         self.main_char = self.characters[0]
         self.enemiea = self.all_objects['e']
         self.finale = self.all_objects['f']
+        self.bullets: list[Bullet] = []
         self.chidx = 0
         self.detect_rect = pygame.Rect(1, 1, Constant.BOX[0]*3, Constant.BOX[1]*1)
         self.search_rect = pygame.Rect(1, 1, Constant.BOX[0]*20, Constant.BOX[1]*1)
@@ -74,7 +71,7 @@ class Chapter1(Chapter):
         self.camera.follow_target(self.main_char.rect)
         if self.frames > Constant.LOADING_DELAY:
             self.frames = 0
-            self.state = self.MOVEMENT #state switch
+            self.state = self.FIGHTING
             self.texbox = TextBox(1, 5)
     
     def detect_character(self):
@@ -84,10 +81,8 @@ class Chapter1(Chapter):
         self.detect_rect.centerx = self.main_char.rect.centerx
         for p in self.peoples:
             if self.search_rect.colliderect(p.rect):
-                print("Collision here ")
                 if p not in self.char_assign.values():
                     ch = self.conversation['characters'][self.p_taken]
-                    print(ch, "detected")
                     self.char_assign[self.conversation['characters'][self.p_taken]] = p
                     self.p_taken += 1
         for p in self.peoples:
@@ -113,8 +108,36 @@ class Chapter1(Chapter):
     def def_logic(self):
         if self.camera.contains_object(self.main_char.rect):
             self.main_char.update(sprites=self.bg_objects.camera_captured_sprites())
+        
+        for c in self.characters:
+            if self.main_char != c:
+                if self.camera.contains_object(c.rect):
+                    b = c.autoplay()
+                    if b is not None: self.bullets.append(b)
+                    c.move()
+                    c.update(sprites=self.bg_objects.camera_captured_sprites())
+        for e in self.enemiea:
+            if self.camera.contains_object(e.rect):
+                b = e.autoplay()
+                if b is not None: self.bullets.append(b)
+                e.move()
+                e.update(sprites=self.bg_objects.camera_captured_sprites())
+        for p in self.peoples:
+            if self.camera.contains_object(p.rect):
+                b = p.autoplay()
+                if b is not None: self.bullets.append(b)
+                p.move()
+                p.update(sprites=self.bg_objects.camera_captured_sprites())
 
+        for b in self.bullets:
+            b.run_bullete()
+            b.shot_character(self.enemiea)
+            b.shot_character(self.peoples)
+            b.shot_character(self.characters)
         self.camera.follow_target(self.main_char.rect)
+        for f in self.finale:
+            if self.main_char.rect.colliderect(f.rect):
+                sys.exit()
     
     def def_event(self, event:pygame.event.Event):
         if event.type == pygame.KEYDOWN:
@@ -123,7 +146,10 @@ class Chapter1(Chapter):
             # elif event.key == pygame.K_k:
             #     self.main_char.got_shot()
             else:
-                self.main_char.handle_keydown(event.key)
+                bullete = self.main_char.handle_keydown(event.key)
+                if event.key==pygame.K_x and bullete is not None:
+                    print(bullete)
+                    self.bullets.append(bullete)
         
         if event.type == pygame.KEYUP:
             self.main_char.handle_keyup(event.key)
@@ -148,6 +174,8 @@ class Chapter1(Chapter):
         for ch in self.characters:
             ch.animate()
             ch.show(self.game.screen, self.camera)
+        for b in self.bullets:
+            b.show_bullet(self.game.screen, self.game.camera)
     
 
 
@@ -155,8 +183,7 @@ class Chapter1(Chapter):
         self.def_logic()
         for f in self.finale:
             if self.main_char.rect.colliderect(f.rect):
-                self.game.current_phase = "ch-2"
-                return
+                sys.exit()
         if self.detect_character():
             self.state = self.TALKING
             self.texbox.set_text(self.conversation["converse"][self.curr_convers_line][1])
@@ -180,41 +207,10 @@ class Chapter1(Chapter):
             self.texbox.show_text(self.game.screen, self.char_assign[tar].rect, self.game.camera)
         
         
-    def talking_logic(self):
-        self.def_logic()
-        if self.conversation["converse"][self.curr_convers_line][2] == 'keep':
-            self.state = self.MOVEMENT
-            self.free_text = True
-            return
-        # self.def_logic()
-    def toggle_to_next_converse(self, force = False):
-        if self.texbox.is_finished or force:
-            if self.conversation["converse"][self.curr_convers_line][2] == 'finish':
-                self.state = self.MOVEMENT
-                self.curr_convers_line += 1
-                return
-            self.curr_convers_line += 1
-            self.texbox.set_text(self.conversation["converse"][self.curr_convers_line][1])
 
-    def talking_event(self, event):
-        if event.type == pygame.KEYDOWN:
-            if event.key == pygame.K_RETURN:
-                self.toggle_to_next_converse()
-            if event.key == pygame.K_LSHIFT:
-                self.toggle_to_next_converse(True)
-                
-                
 
-    def talking_graphic(self):
-        self.def_graphics()
-        ch = self.conversation["converse"][self.curr_convers_line][0]
-        char = self.char_assign[ch]
-        self.texbox.show_text(self.game.screen, char.rect, self.game.camera)
-    
-        
-    
 
-    
+
 
     def handle_event(self):
         for event in pygame.event.get():
@@ -225,8 +221,6 @@ class Chapter1(Chapter):
                 self.loading_scene_event(event)
             elif self.state == self.MOVEMENT:
                 self.movement_event(event)
-            elif self.state == self.TALKING:
-                self.talking_event(event)
             else:
                 self.def_event(event=event)
 
@@ -237,8 +231,6 @@ class Chapter1(Chapter):
             self.loading_logic()
         elif self.state == self.MOVEMENT:
             self.movement_logic()
-        elif self.state == self.TALKING:
-            self.talking_logic()
         else:
             self.def_logic()
 
@@ -249,7 +241,5 @@ class Chapter1(Chapter):
             self.loading_scene_graphic()
         elif self.state == self.MOVEMENT:
             self.movement_graphics()
-        elif self.state == self.TALKING:
-            self.talking_graphic()
         else:
             self.def_graphics()

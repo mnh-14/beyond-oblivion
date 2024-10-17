@@ -29,6 +29,8 @@ class Constant:
     LOADING_DELAY = 45
     CHAR_BASE_HEALTH = 5
     BASE_BULLETE_DAMAGE = 2
+    BASE_BULLETE_SPEED = 45
+    BULLET_2R = 4
     GAME_WORLD = {
         1: ('asset', 'world', 'world1.txt'),
         2: ('asset', 'world', 'chap3.txt')

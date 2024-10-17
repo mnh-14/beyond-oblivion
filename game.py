@@ -5,6 +5,7 @@ from typing import Any, List
 import pygame
 from pygame.sprite import AbstractGroup
 from chapters.chapter1 import Chapter1
+from chapters.chapter2 import Chapter2
 from chapters.chapter3 import Chapter3
 from settings import Constant
 from objects import Enemy, Object, People, Player
@@ -49,6 +50,9 @@ class Game:
         chapter1 = Chapter1()
         chapter1.initiate_chapter(self)
         self.cphase.append(chapter1)
+        chapter2 = Chapter2()
+        chapter2.initiate_chapter(self)
+        self.cphase.append(chapter2)
         chapter3 = Chapter3()
         chapter3.initiate_chapter(self)
         self.cphase.append(chapter3)

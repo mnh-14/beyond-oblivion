@@ -17,12 +17,18 @@ class Chapter3(Chapter):
     }
 
     TEXTING = 't'
+    LOADING = 'l'
+    DEFAULT = "df"
     def __init__(self) -> None:
         super().__init__()
         ppath = os.path.join(*Constant.TILEMAP['c'])
         # self.characters = [Player(ppath), Player(ppath)]
-        self.texbox = TextBox()
-        self.state = ""
+        self.texbox = TextBox(3, 5)
+        self.texbox.set_text("LOADING..........!")
+        self.state = self.LOADING
+        self.frames = 0
+        self.all_states = ["cs1", "df"]
+        self.scene_count = 0
     
     def initiate_chapter(self, game):
         super().initiate_chapter(game)
@@ -36,37 +42,46 @@ class Chapter3(Chapter):
         self.chidx = (self.chidx+1) % len(self.characters)
         self.main_char = self.characters[self.chidx]
     
+    def loading_logic(self):
+        if self.texbox.is_finished: self.frames += 1
+        # self.main_char.update(sprites=self.bg_objects)
+        for c in self.characters:
+            c.update(sprites=self.bg_objects)
 
-    def handle_event(self):
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                sys.exit()
-            
-            if event.type == pygame.KEYDOWN:
-                if event.key == pygame.K_TAB:
-                    self.toggle_main_char()
-                elif event.key == pygame.K_t:
-                    self.texbox.set_text("I am Nafis Hussain, Nice to meet you. How are you and who are you ?")
-                    if self.state == self.TEXTING:
-                        self.state = ""
-                        self.texbox.__init__()
-                    else:
-                        self.state = self.TEXTING
-                else:
-                    self.main_char.handle_keydown(event.key)
-            
-            if event.type == pygame.KEYUP:
-                self.main_char.handle_keyup(event.key)
+        self.camera.follow_target(self.main_char.rect)
+        if self.frames > Constant.LOADING_DELAY:
+            self.frames = 0
+            self.state = "df"
+            self.texbox = TextBox()
     
-
-    def handle_logic(self):
+    def loading_scene_event(self, event:pygame.event.Event):
+        return
+    
+    def loading_scene_graphic(self):
+        self.game.screen.fill((10,10,10))
+        crect = pygame.Rect(1, 1, 1, 1)
+        crect.center = self.game.camera.rect.center
+        # self.texbox.show_text(self.game.screen, self.game.camera.relative_rect(crect), self.game.camera)
+        self.texbox.show_text(self.game.screen, crect, self.game.camera)
+        
+    def def_logic(self):
         if self.camera.contains_object(self.main_char.rect):
             self.main_char.update(sprites=self.bg_objects.camera_captured_sprites())
 
         self.camera.follow_target(self.main_char.rect)
-
     
-    def handle_graphics(self):
+    def def_event(self, event:pygame.event.Event):
+        if event.type == pygame.KEYDOWN:
+            if event.key == pygame.K_TAB:
+                self.toggle_main_char()
+            else:
+                self.main_char.handle_keydown(event.key)
+        
+        if event.type == pygame.KEYUP:
+            self.main_char.handle_keyup(event.key)
+    
+
+    def def_graphics(self):
         self.bg_objects.draw(self.game.screen)
         self.main_char.animate()
         self.main_char.show(self.game.screen, self.camera)
@@ -80,3 +95,37 @@ class Chapter3(Chapter):
         for ch in self.characters:
             ch.animate()
             ch.show(self.game.screen, self.camera)
+        
+    
+        
+    
+
+
+        
+    
+
+    def handle_event(self):
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                sys.exit()
+            
+            if self.state == self.DEFAULT:
+                self.def_event(event)
+            elif self.state == self.LOADING:
+                self.loading_scene_event(event)
+
+    
+
+    def handle_logic(self):
+        if self.state == self.DEFAULT:
+            self.def_logic()
+        elif self.state == self.LOADING:
+            self.loading_logic()
+
+
+    
+    def handle_graphics(self):
+        if self.state == self.DEFAULT:
+            self.def_graphics()
+        elif self.state == self.LOADING:
+            self.loading_scene_graphic()

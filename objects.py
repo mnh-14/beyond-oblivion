@@ -263,9 +263,9 @@ class Player(Object):
             
 
 class TextBox:
-    def __init__(self) -> None:
+    def __init__(self, font_size_mult=1, delay=1) -> None:
         pygame.init()
-        self.font = pygame.font.Font(None, Constant.FONT_SIZE)
+        self.font = pygame.font.Font(None, Constant.FONT_SIZE*font_size_mult)
         self.text = ""
         self.lines = []
         self.current_line = ""
@@ -276,6 +276,8 @@ class TextBox:
         self.rect = pygame.Rect(0, 0, 1, 1)
         self.rr: pygame.Rect = None
         self.is_finished = False
+        self.delay_count = 0
+        self.delay = delay
     
     def set_text(self, txt:str):
         self.text = txt
@@ -310,6 +312,8 @@ class TextBox:
 
     
     def show_text(self, screen:pygame.Surface, target:pygame.rect, camera):
+        calc = self.delay_count % self.delay == 0
+        self.delay_count = (self.delay_count+1) % self.delay
         self._set_position(target)
         rad = Constant.TEXT_BOX_RADIUS
         pygame.draw.rect(screen, (255, 255, 255), camera.relative_rect(self.rr), width=0, border_radius=rad)
@@ -323,23 +327,26 @@ class TextBox:
                 break
             screen.blit(self.line_surface[idx], camera.relative_rect(self.line_rects[idx]))
             tl = self.line_rects[idx].bottomleft
+
         if self.is_finished:
             return
-        if self.frame == len(self.lines[self.curr_line_idx]):
-            self.frame = 0
-            self.curr_line_idx += 1
-            self.current_line = ""
+        if calc:
+            if self.frame == len(self.lines[self.curr_line_idx]):
+                self.frame = 0
+                self.curr_line_idx += 1
+                self.current_line = ""
+            
+            if self.curr_line_idx == len(self.lines):
+                self.is_finished = True
+                return
+            self.current_line += self.lines[self.curr_line_idx][self.frame]
         
-        if self.curr_line_idx == len(self.lines):
-            self.is_finished = True
-            return
-        
-        self.current_line += self.lines[self.curr_line_idx][self.frame]
         img = self.font.render(self.current_line, True, Constant.TEXT_FONT_COLOR)
         img_rect = img.get_rect()
         img_rect.topleft = tl
         screen.blit(img, camera.relative_rect(img_rect))
-        self.frame += 1
+        if calc:
+            self.frame += 1
         
         
         

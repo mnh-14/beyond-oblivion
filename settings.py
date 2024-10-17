@@ -26,6 +26,7 @@ class Constant:
     TEXT_BOX_OFFSET = 15
     TEXT_BOX_INFLATION = (15,15)
     TEXT_BOX_RADIUS = 6
+    LOADING_DELAY = 45
     GAME_WORLD = {
         1: ('asset', 'world', 'world1.txt'),
         2: ('asset', 'world', 'chap3.txt')

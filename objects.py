@@ -181,7 +181,7 @@ class Player(Object):
         self.anim_direction = [1, 1]
         self.anim_state = self.STANDING
         self.talking = False
-        self.alive = True
+        self.dead = False
 
     
     def handle_keydown(self, key, **kwargs):
@@ -212,6 +212,10 @@ class Player(Object):
         if int(self.velocity[1])==0:
             self.velocity[1] = Constant.JUMP_VELOCITY
     
+    def kill_character(self):
+        self.dead = True
+        self.anim_state = self.DYING
+    
 
     def _frame_reset(self):
         self.frame_count = 0
@@ -219,6 +223,10 @@ class Player(Object):
         self.anim_frame = 0
 
     def animation_state_switch(self):
+        if self.dead:
+            if self.anim_frame==len(self.animations[self.anim_state]):
+                del self
+                return
         if int(self.velocity[0]) == 0 and self.anim_state==self.FIGHT:
             if self.anim_frame==len(self.animations[self.anim_state]):
                 self.anim_state = self.STANDING
@@ -311,7 +319,7 @@ class TextBox:
         self.rr.center = self.rect.center
 
     
-    def show_text(self, screen:pygame.Surface, target:pygame.rect, camera):
+    def show_text(self, screen:pygame.Surface, target:pygame.Rect, camera):
         calc = self.delay_count % self.delay == 0
         self.delay_count = (self.delay_count+1) % self.delay
         self._set_position(target)

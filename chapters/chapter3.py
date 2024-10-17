@@ -27,7 +27,7 @@ class Chapter3(Chapter):
         self.texbox.set_text("LOADING..........!")
         self.state = self.LOADING
         self.frames = 0
-        self.all_states = ["cs1", "df"]
+        self.all_states = ["cs1","gp1", "cs2", "gp2", "df"]
         self.scene_count = 0
     
     def initiate_chapter(self, game):
@@ -44,14 +44,13 @@ class Chapter3(Chapter):
     
     def loading_logic(self):
         if self.texbox.is_finished: self.frames += 1
-        # self.main_char.update(sprites=self.bg_objects)
         for c in self.characters:
             c.update(sprites=self.bg_objects)
 
         self.camera.follow_target(self.main_char.rect)
         if self.frames > Constant.LOADING_DELAY:
             self.frames = 0
-            self.state = "df"
+            self.state = "df" #state switch
             self.texbox = TextBox()
     
     def loading_scene_event(self, event:pygame.event.Event):
@@ -61,7 +60,6 @@ class Chapter3(Chapter):
         self.game.screen.fill((10,10,10))
         crect = pygame.Rect(1, 1, 1, 1)
         crect.center = self.game.camera.rect.center
-        # self.texbox.show_text(self.game.screen, self.game.camera.relative_rect(crect), self.game.camera)
         self.texbox.show_text(self.game.screen, crect, self.game.camera)
         
     def def_logic(self):
@@ -100,8 +98,6 @@ class Chapter3(Chapter):
         
     
 
-
-        
     
 
     def handle_event(self):
@@ -129,3 +125,5 @@ class Chapter3(Chapter):
             self.def_graphics()
         elif self.state == self.LOADING:
             self.loading_scene_graphic()
+        elif self.state == "cs1":
+            pass

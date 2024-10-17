@@ -1,6 +1,5 @@
 from __future__ import annotations
-from re import S
-from tkinter import NO
+import random
 from typing import Any
 import pygame
 
@@ -19,15 +18,27 @@ class Object(pygame.sprite.Sprite):
         self.rect = self.image.get_rect()
         # self.rect = pygame.Rect(0, 0, Constant.BOX[0], Constant.BOX[1])
         self.pre_rect = self.rect.copy()
+        self.anim_direction = [1, 1]
         self.rect.center = (0,0)
         self.velocity = [0,0]
         self.resistance = [0, 0]
         self.acceleration = [0, 0]
         self.acceleration[1] = -1 * Constant.DEFAULT_GRAVITY if gravity else 0
         self.passthrough = passthrough
+        self.direction = 1
     
+    def get_image_rect(self):
+        rect = self.image.get_rect()
+        rect.bottom = self.rect.bottom
+        if self.anim_direction[0] > 0:
+            rect.left = self.rect.left
+        else:
+            rect.right = self.rect.right
+        return rect
+
     def show(self, screen:pygame.Surface, camera):
-        rel_rect = camera.relative_rect(self.rect)
+        rect = self.get_image_rect()
+        rel_rect = camera.relative_rect(rect)
         screen.blit(self.image, rel_rect)
     
     def load_animations(self, animation_cat):
@@ -178,9 +189,14 @@ class Player(Object):
         self.anim_state = self.STANDING
         self.talking = False
         self.dead = False
+        self.health = Constant.CHAR_BASE_HEALTH
+        self.detection_rect = pygame.Rect(0, 0, Constant.BOX[0]*15, Constant.BOX[1]*2)
+        self.autoplayer = AutoPlayer(self)
 
     
     def handle_keydown(self, key, **kwargs):
+        if self.health <= 0:
+            return
         if key == pygame.K_LEFT:
             self.move_left()
             print(self.rect.center)
@@ -193,12 +209,14 @@ class Player(Object):
             jump.play()
             print(self.rect.center)
         if key == pygame.K_x:
-            self.do_fight()
             fight=pygame.mixer.Sound('sounds/Hitting.wav')
             fight.play()
+            return self.do_fight()
             
     
     def handle_keyup(self, key):
+        if self.health <= 0:
+            return
         if key == pygame.K_LEFT:
             self.move_left(False)
         if key == pygame.K_RIGHT:
@@ -208,14 +226,29 @@ class Player(Object):
         self.velocity[0]=0
         self.anim_state=self.FIGHT
         self._frame_reset()
+        return Bullet(self.anim_direction[0], self.rect.center)
     
     def make_jump(self):
         if int(self.velocity[1])==0:
             self.velocity[1] = Constant.JUMP_VELOCITY
     
-    def kill_character(self):
-        self.dead = True
+    def got_shot(self, damage:int=Constant.BASE_BULLETE_DAMAGE):
+        if self.anim_state == self.DYING:
+            return
+        # self.dead = True
+        # self.alive = False
+        if self.health > 0:
+            self.health -= damage
+
+        self._frame_reset()
         self.anim_state = self.DYING
+        self.acceleration[0] = 0
+    
+
+    def stop_movement(self):
+        self.acceleration[0] = 0
+
+            
     
 
     def _frame_reset(self):
@@ -225,9 +258,11 @@ class Player(Object):
 
     def animation_state_switch(self):
         if self.dead:
+            return
+        if self.health <= 0:
             if self.anim_frame==len(self.animations[self.anim_state]):
-                del self
-                return
+                self.dead = True
+            return
         if int(self.velocity[0]) == 0 and self.anim_state==self.FIGHT:
             if self.anim_frame==len(self.animations[self.anim_state]):
                 self.anim_state = self.STANDING
@@ -255,6 +290,8 @@ class Player(Object):
     def animate(self):
         self.animation_state_switch()
         # self.frame_count += 1
+        if self.dead:
+            return
         if (self.frame_count) % self.delays[self.anim_state] == 0:
             self.anim_frame = (self.anim_frame % len(self.animations[self.anim_state])) + 1
             self.frame_count = 0
@@ -263,9 +300,107 @@ class Player(Object):
         self.image = self.animations[self.anim_state][self.anim_frame-1]
         if self.anim_direction[0] < 0:
             self.image = pygame.transform.flip(self.image, True, False)
-        # center = self.rect.center
-        # self.rect = self.image.get_rect()
-        # self.rect.center = center
+        # x = self.rect.centerx
+        # b = self.rect.bottom
+    
+    def set_target(self, target:Player):
+        self.autoplayer.set_target(target)
+    
+    def autoplay(self):
+        return self.autoplayer.autoplay()
+
+
+class AutoPlayer:
+    def __init__(self, player:Player) -> None:
+        self.target:Player = None
+        self.player = player
+        self.movement_delay = (100, 850)
+        self.shooting_delay = 45
+        self.jumping_delay = 45
+        self.shoot_frame = 0
+        self.move_frame = 0
+        self.jump_frame=0
+        self.dir = 1
+    
+    def set_target(self, target:Player):
+        if self.target is None:
+            self.target = target
+    
+    def autoplay(self):
+        if self.target is None:
+            self.roaming()
+        else:
+            return self.follow_target()
+        return None
+    
+
+    def follow_target(self):
+        self.shoot_frame += 1
+        self.move_frame += 1
+        self.jump_frame += 1
+        dx = self.player.rect.centerx - self.target.rect.centerx
+        if dx > 0:
+            self.player.move_left()
+        if self.move_frame % self.movement_delay[1] == 0:
+            if dx < 0:
+                self.player.move_right(False)
+            else:
+                self.player.move_left(False)
+        elif self.move_frame % self.movement_delay[0] == 0:
+            if self.player.acceleration[0] == 0:
+                if self.dir > 0:
+                    self.player.move_left()
+                    self.dir = -1
+                else:
+                    self.player.move_right()
+                    self.dir = 1
+        if self.shoot_frame % self.shooting_delay:
+            return self.player.do_fight()
+        
+            
+
+
+    def roaming_arround(self):
+        self.shoot_frame += 1
+        self.move_frame += 1
+        self.jump_frame += 1
+        if self.move_frame % self.movement_delay[1] == 0:
+            print("Roaming around")
+            self.player.stop_movement()
+        elif self.move_frame % self.movement_delay[0] == 0:
+            if self.player.acceleration[0] == 0:
+                if self.dir > 0:
+                    self.player.move_left()
+                    self.dir = -1
+                else:
+                    self.player.move_right()
+                    self.dir = 1
+    def roaming(self):
+        c = random.choice([x for x in range(45)])
+        if c == 25:
+            if self.dir > 0:
+                self.player.move_left()
+                self.dir = -1
+            else:
+                self.player.move_right()
+                self.dir = 1
+        elif c==40:
+            self.player.stop_movement()
+
+
+
+
+
+class Enemy(Player):
+    def __init__(self, img_path: str) -> None:
+        super().__init__(img_path)
+        self.load_animations(AssetLoader.ENEMY)
+
+
+class People(Player):
+    def __init__(self, img_path: str) -> None:
+        super().__init__(img_path)
+        self.load_animations(AssetLoader.PEOPLE)
 
             
 
@@ -287,10 +422,12 @@ class TextBox:
         self.is_finished = False
         self.delay_count = 0
         self.delay = delay
+        self.font_size_mul = font_size_mult
     
     def set_text(self, txt:str):
-        self.text = txt
-        words = txt.split(" ")
+        self.__init__(self.font_size_mul, self.delay)
+        self.text = txt.strip()
+        words = self.text.split(" ")
         horizontal_count = int((len(words) * Constant.TEXT_BOX_DIM_R[0]) // Constant.TEXT_BOX_DIM_R[2]) + 1
         vertical_count = int((len(words) * Constant.TEXT_BOX_DIM_R[1]) // Constant.TEXT_BOX_DIM_R[2]) * Constant.TEXT_BOX_DIM_CONST[1]
         lws = []
@@ -340,12 +477,12 @@ class TextBox:
         if self.is_finished:
             return
         if calc:
-            if self.frame == len(self.lines[self.curr_line_idx]):
+            if self.frame >= len(self.lines[self.curr_line_idx]):
                 self.frame = 0
                 self.curr_line_idx += 1
                 self.current_line = ""
             
-            if self.curr_line_idx == len(self.lines):
+            if self.curr_line_idx >= len(self.lines):
                 self.is_finished = True
                 return
             self.current_line += self.lines[self.curr_line_idx][self.frame]
@@ -356,6 +493,38 @@ class TextBox:
         screen.blit(img, camera.relative_rect(img_rect))
         if calc:
             self.frame += 1
+
+
+class Bullet:
+    def __init__(self, dir, center, damage=Constant.BASE_BULLETE_DAMAGE, speed=Constant.BASE_BULLETE_SPEED) -> None:
+        self.circle_rect = pygame.Rect(0,0, Constant.BULLET_2R, Constant.BULLET_2R)
+        self.circle_rect.center = center
+        self.circle_rect.centery -= Constant.BOX[1]//2
+        self.h_speed = speed
+        self.damage = damage
+        self.dir = dir
+        self.delay = 18
+        self.frame = 1
+    
+    def show_bullet(self,screen:pygame.Surface, camera):
+        if self.frame % self.delay == 0:
+            relrect = camera.relative_rect(self.circle_rect)
+            pygame.draw.circle(screen, (0,0,0), relrect.center, Constant.BULLET_2R//2)
+    
+    def run_bullete(self):
+        if self.frame % self.delay == 0:
+            self.circle_rect.centerx += self.dir * self.h_speed
+        else:
+            self.frame += 1
+    
+    def shot_character(self, chars:list[Player]):
+        if self.frame % self.delay:
+            return
+        for c in chars:
+            if c.rect.colliderect(self.circle_rect):
+                c.got_shot(self.damage)
+                del self
+                return
         
         
         

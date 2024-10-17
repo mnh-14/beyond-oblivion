@@ -13,8 +13,8 @@ class Constant:
     FPS = 60
     CHAR_SPEED = 5
     VELOCITY_X_LIM = 6
-    JUMP_VELOCITY = 30
-    VELOCITY_Y_LIM = 25
+    JUMP_VELOCITY = 20
+    VELOCITY_Y_LIM = 20
     DEFAULT_ACCELERATION = 3
     RESISTANCE_DECELERATION = 0.4
     DEFAULT_GRAVITY = 1
@@ -27,6 +27,10 @@ class Constant:
     TEXT_BOX_INFLATION = (15,15)
     TEXT_BOX_RADIUS = 6
     LOADING_DELAY = 45
+    CHAR_BASE_HEALTH = 5
+    BASE_BULLETE_DAMAGE = 2
+    BASE_BULLETE_SPEED = 45
+    BULLET_2R = 4
     GAME_WORLD = {
         1: ('asset', 'world', 'world1.txt'),
         2: ('asset', 'world', 'chap3.txt')
@@ -34,6 +38,9 @@ class Constant:
     TILEMAP = {
         't': ('asset', 'tiles', 'tile_0001.png'),
         'c': ('asset', 'character', 'tile_0006.png'),
+        'p': ('asset', 'character', 'tile_0006.png'),
+        'e': ('asset', 'character', 'tile_0006.png'),
+        'f': ('asset', 'tiles', 'vertical_bar.png')
     }
 
 
@@ -58,6 +65,8 @@ class SpriteCollection:
 
 class AssetLoader:
     PLAYER = 'player'
+    ENEMY = 'enemy'
+    PEOPLE = 'people'
     SOURCE = 'source'
     RESIZE = 'resize'
     FRAMES = 'frames'
@@ -75,6 +84,14 @@ class AssetLoader:
             delays[key] = data[self.DELAY][key]
             for i in range(1, data[self.FRAMES][key]+1):
                 img = pygame.image.load(os.path.join(*data[self.SOURCE], key, str(i)+'.png')).convert_alpha()
+                # img.fill((200,50,50), special_flags=pygame.BLEND_RGB_SUB)
                 images[key].append(img)
         
         return images, delays
+    
+    @staticmethod
+    def load_conversation(location: str) -> list:
+        with open(location, "r") as asset:
+            return json.load(asset)
+        
+

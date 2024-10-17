@@ -4,9 +4,10 @@ import pygame
 from chapters.chapter import Chapter
 from objects import Player, TextBox
 from settings import AssetLoader, Constant
-
+from chapters.maze_game import MazeGame
 
 class Chapter3(Chapter):
+    is_maze = False
     WOLRD = ("asset", "world", "chap3.txt")
     puzzle_1_finished = False;puzzle_2_finished = False;puzzle_3_finished = False
 
@@ -27,8 +28,9 @@ class Chapter3(Chapter):
         self.texbox.set_text("LOADING..........!")
         self.state = self.LOADING
         self.frames = 0
-        self.all_states = ["cs1","gp1", "cs2", "gp2", "df"]
+        self.all_states = ["cs1","gp1", "cs2", "gp2", "df","maze"]
         self.scene_count = 0
+        self.maze=MazeGame(120)
     
     def initiate_chapter(self, game):
         super().initiate_chapter(game)
@@ -37,7 +39,6 @@ class Chapter3(Chapter):
         self.bg_objects = self.all_objects["t"]
         self.main_char = self.characters[0]
         self.chidx = 0
-    
     def toggle_main_char(self):
         self.chidx = (self.chidx+1) % len(self.characters)
         self.main_char = self.characters[self.chidx]
@@ -67,6 +68,12 @@ class Chapter3(Chapter):
             self.main_char.update(sprites=self.bg_objects.camera_captured_sprites())
 
         self.camera.follow_target(self.main_char.rect)
+        #added by me
+        if self.main_char.rect.x > 4000 and not  self.is_maze:
+            sound=pygame.mixer.Sound('sounds/player-jumping-in-a-video-game-2043.wav')
+            self.maze.run()
+            self.is_maze = True  # Set the maze state to active
+    
     
     def def_event(self, event:pygame.event.Event):
         if event.type == pygame.KEYDOWN:
@@ -77,7 +84,6 @@ class Chapter3(Chapter):
         
         if event.type == pygame.KEYUP:
             self.main_char.handle_keyup(event.key)
-    
 
     def def_graphics(self):
         self.bg_objects.draw(self.game.screen)
@@ -95,11 +101,6 @@ class Chapter3(Chapter):
             ch.show(self.game.screen, self.camera)
         
     
-        
-    
-
-    
-
     def handle_event(self):
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -117,9 +118,10 @@ class Chapter3(Chapter):
             self.def_logic()
         elif self.state == self.LOADING:
             self.loading_logic()
-
-
-    
+        elif self.state == "maze":
+            self.maze.run()
+        
+   
     def handle_graphics(self):
         if self.state == self.DEFAULT:
             self.def_graphics()

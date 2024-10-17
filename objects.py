@@ -161,10 +161,6 @@ class Object(pygame.sprite.Sprite):
             self.acceleration[0] = 0
         
 
-    
-
-
-
 class Player(Object):
     STANDING = 's'
     RUNNING = 'r'
@@ -193,9 +189,14 @@ class Player(Object):
             print(self.rect.center)
         if key == pygame.K_SPACE:
             self.make_jump()
+            jump=pygame.mixer.Sound('sounds/player-jumping-in-a-video-game-2043.wav')
+            jump.play()
             print(self.rect.center)
         if key == pygame.K_x:
             self.do_fight()
+            fight=pygame.mixer.Sound('sounds/Hitting.wav')
+            fight.play()
+            
     
     def handle_keyup(self, key):
         if key == pygame.K_LEFT:

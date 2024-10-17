@@ -137,7 +137,7 @@ class Chapter2(Chapter):
         self.camera.follow_target(self.main_char.rect)
         for f in self.finale:
             if self.main_char.rect.colliderect(f.rect):
-                sys.exit()
+                self.game.current_phase = "ch-3"
     
     def def_event(self, event:pygame.event.Event):
         if event.type == pygame.KEYDOWN:
